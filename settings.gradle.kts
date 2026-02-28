@@ -1,25 +1,16 @@
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
-        mavenCentral()
         gradlePluginPortal()
+        google()
+        mavenCentral()
     }
 }
-
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        // For local publishes of karoo-ext
-        mavenLocal()
         google()
         mavenCentral()
-        // karoo-ext
+        // karoo-ext from Github Packages
         maven {
             url = uri("https://maven.pkg.github.com/hammerheadnav/karoo-ext")
             credentials {
@@ -27,13 +18,8 @@ dependencyResolutionManagement {
                 password = providers.gradleProperty("gpr.key").getOrElse(System.getenv("TOKEN"))
             }
         }
-        // mapbox
-        maven {
-            url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
-        }
     }
 }
 
-rootProject.name = "karoo-ext"
-include(":lib", ":app")
- 
+rootProject.name = "Karoo Extension Template"
+include("app")
