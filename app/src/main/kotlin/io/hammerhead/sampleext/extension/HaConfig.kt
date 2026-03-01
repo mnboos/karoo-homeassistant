@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024 SRAM LLC.
+ * Copyright (c) 2025 SRAM LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 
 package io.hammerhead.sampleext.extension
 
-import io.hammerhead.karooext.internal.Emitter
-import io.hammerhead.karooext.models.Device
-import io.hammerhead.karooext.models.DeviceEvent
+object HaConfig {
+    const val BASE_URL = "http://homeassistant.local:8123" // TODO: change
+    const val ACCESS_TOKEN = "YOUR_LONG_LIVED_ACCESS_TOKEN" // TODO: change
 
-sealed interface SampleDevice {
-    val source: Device
-    fun connect(emitter: Emitter<DeviceEvent>)
+    val buttons = listOf(
+        HaButton("ha-btn-1", "Garage", "cover", "toggle", "cover.garage"),
+        HaButton("ha-btn-2", "Lights", "light", "toggle", "light.outdoor"),
+        HaButton("ha-btn-3", "Fan", "switch", "toggle", "switch.fan"),
+    )
 }

@@ -3,7 +3,9 @@
     "allow": [
       "Bash(./gradlew build:*)",
       "Bash(java:*)",
-      "Bash(export:*)"
+      "Bash(export:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(./gradlew spotlessApply:*)"
     ]
   }
 }

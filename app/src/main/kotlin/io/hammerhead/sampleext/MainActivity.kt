@@ -16,56 +16,19 @@
 
 package io.hammerhead.sampleext
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.core.app.ActivityCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 
-@Composable
-fun Main(
-    viewModel: MainViewModel = hiltViewModel(),
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-    ) {
-        TabLayout(
-            state,
-            dispatchEffect = viewModel::dispatchEffect,
-            makeHttpRequest = viewModel::makeHttpRequest,
-            playBeeps = viewModel::playBeeps,
-            toggleHomeBackground = viewModel::toggleHomeBackground,
-        )
-    }
-}
-
-@SuppressLint("SetTextI18n")
+/**
+ * Minimal launcher activity for extension discovery.
+ * The Karoo system requires a launchable activity to recognize this as an extension app.
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @SuppressLint("InlinedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT),
-                0,
-            )
-        }
-        setContent { Main() }
+        // Extension is managed by Karoo service. User doesn't interact with this activity.
+        finish()
     }
 }

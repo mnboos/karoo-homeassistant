@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024 SRAM LLC.
+ * Copyright (c) 2025 SRAM LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,10 @@
 
 package io.hammerhead.sampleext.extension
 
-import io.hammerhead.karooext.extension.DataTypeImpl
-
-class BespokeDataType(extension: String) : DataTypeImpl(extension, TYPE_ID) {
-    // No view or stream implementations are necessary because
-    // streaming data comes from the source and the view is standard numeric view
-
-    companion object {
-        const val TYPE_ID = "bespoke"
-    }
-}
+data class HaButton(
+    val actionId: String, // matches BonusAction actionId in XML
+    val displayName: String, // label shown on Karoo button picker
+    val domain: String, // e.g. "light", "cover", "switch", "script"
+    val service: String, // e.g. "toggle", "turn_on", "turn_off"
+    val entityId: String?, // null for script/scene calls that don't need it
+)

@@ -84,14 +84,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.rx2)
 
-    implementation("no.nordicsemi.kotlin.ble:client-android:2.0.0-alpha02")
-
     // Hilt
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
-
-    implementation(libs.mapbox.sdk.turf)
 
     constraints {
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.0.0") {
