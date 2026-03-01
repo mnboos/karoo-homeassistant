@@ -17,6 +17,10 @@
             </intent-filter>
         </activity>
 
+        <receiver
+            android:name=".extension.HaButtonReceiver"
+            android:exported="true" />
+
         <service
             android:name=".extension.HaExtension"
             android:exported="true"

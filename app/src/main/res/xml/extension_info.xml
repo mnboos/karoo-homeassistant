@@ -3,13 +3,22 @@
     displayName="@string/extension_name"
     icon="@drawable/ic_sample"
     id="homeassistant">
-    <BonusAction
+    <DataType
         displayName="@string/ha_garage"
-        actionId="ha-btn-1" />
-    <BonusAction
+        description="@string/ha_garage_desc"
+        graphical="true"
+        icon="@drawable/ic_sample"
+        typeId="ha-btn-1" />
+    <DataType
         displayName="@string/ha_lights"
-        actionId="ha-btn-2" />
-    <BonusAction
+        description="@string/ha_lights_desc"
+        graphical="true"
+        icon="@drawable/ic_sample"
+        typeId="ha-btn-2" />
+    <DataType
         displayName="@string/ha_fan"
-        actionId="ha-btn-3" />
+        description="@string/ha_fan_desc"
+        graphical="true"
+        icon="@drawable/ic_sample"
+        typeId="ha-btn-3" />
 </ExtensionInfo>

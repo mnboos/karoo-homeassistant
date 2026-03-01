@@ -20,10 +20,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.extension.KarooExtension
-import io.hammerhead.karooext.models.HttpResponseState
-import io.hammerhead.karooext.models.InRideAlert
-import io.hammerhead.karooext.models.OnHttpResponse
-import io.hammerhead.sampleext.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,73 +34,23 @@ class HaExtension : KarooExtension("homeassistant", "1.0") {
 
     private var serviceJob: Job? = null
 
-    override val types: List<DataTypeImpl> = emptyList()
-
-    override fun onBonusAction(actionId: String) {
-        val button = HaConfig.buttons.find { it.actionId == actionId }
-        if (button != null) {
-            callHa(button)
-        } else {
-            Timber.w("Unknown action $actionId")
-        }
-    }
-
-    private fun callHa(button: HaButton) {
-        val url = "${HaConfig.BASE_URL}/api/services/${button.domain}/${button.service}"
-        val headers = mapOf(
-            "Authorization" to "Bearer ${HaConfig.ACCESS_TOKEN}",
-            "Content-Type" to "application/json",
-        )
-        val bodyJson = if (button.entityId != null) {
-            """{"entity_id":"${button.entityId}"}"""
-        } else {
-            "{}"
-        }
-
-        val listenerRef = object {
-            var id: String = ""
-        }
-
-        listenerRef.id = karooSystem.addConsumer(
-            OnHttpResponse.MakeHttpRequest(
-                method = "POST",
-                url = url,
-                headers = headers,
-                body = bodyJson.toByteArray(),
-            ),
-        ) { response: OnHttpResponse ->
-            when (val state = response.state) {
-                is HttpResponseState.Complete -> {
-                    Timber.d("HA response for ${button.displayName}: ${state.statusCode}")
-                    if (state.statusCode in 200..299) {
-                        karooSystem.dispatch(
-                            InRideAlert(
-                                id = "ha-action-${button.actionId}",
-                                icon = R.drawable.ic_sample,
-                                title = button.displayName,
-                                detail = "Command sent to Home Assistant",
-                                autoDismissMs = 3_000,
-                                backgroundColor = R.color.colorPrimary,
-                                textColor = R.color.white,
-                            ),
-                        )
-                    } else {
-                        val errorMsg = state.error ?: "HTTP ${state.statusCode}"
-                        Timber.e("HA error for ${button.displayName}: $errorMsg")
-                    }
-                    // Remove the consumer to avoid repeated calls
-                    karooSystem.removeConsumer(listenerRef.id)
-                }
-
-                else -> {
-                    Timber.d("HA request for ${button.displayName} in progress...")
-                }
-            }
+    override val types: List<DataTypeImpl> by lazy {
+        HaConfig.buttons.map { button ->
+            HaButtonDataType(
+                extension = "homeassistant",
+                typeId = button.actionId,
+                button = button,
+                karooSystem = karooSystem,
+                context = this,
+            )
         }
     }
 
     override fun onCreate() {
         super.onCreate()
+        // Provide KarooSystemService to the broadcast receiver
+        HaButtonReceiver.karooSystemServiceProvider = { karooSystem }
+
         serviceJob = CoroutineScope(Dispatchers.IO).launch {
             karooSystem.connect { connected ->
                 if (connected) {

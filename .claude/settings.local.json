@@ -5,7 +5,8 @@
       "Bash(java:*)",
       "Bash(export:*)",
       "Bash(./gradlew clean:*)",
-      "Bash(./gradlew spotlessApply:*)"
+      "Bash(./gradlew spotlessApply:*)",
+      "Bash(./gradlew compileDebugKotlin:*)"
     ]
   }
 }

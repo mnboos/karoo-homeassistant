@@ -2,6 +2,9 @@
     <string name="app_name">Karoo Home Assistant</string>
     <string name="extension_name">Home Assistant</string>
     <string name="ha_garage">Garage</string>
+    <string name="ha_garage_desc">Control garage door</string>
     <string name="ha_lights">Lights</string>
+    <string name="ha_lights_desc">Control outdoor lights</string>
     <string name="ha_fan">Fan</string>
+    <string name="ha_fan_desc">Control fan</string>
 </resources>
