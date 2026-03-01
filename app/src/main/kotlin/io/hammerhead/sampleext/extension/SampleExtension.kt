@@ -323,7 +323,7 @@ class SampleExtension : KarooExtension("sample", "1.0") {
                                 id = "distance-marker",
                                 icon = R.drawable.ic_sample,
                                 title = getString(R.string.alert_title),
-                                detail = getString(R.string.alert_detail, it),
+                                detail = getString(R.string.alert_detail, it.toString()),
                                 autoDismissMs = 10_000,
                                 backgroundColor = R.color.green,
                                 textColor = R.color.light_green,
