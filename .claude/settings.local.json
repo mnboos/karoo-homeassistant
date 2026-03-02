@@ -6,7 +6,10 @@
       "Bash(export:*)",
       "Bash(./gradlew clean:*)",
       "Bash(./gradlew spotlessApply:*)",
-      "Bash(./gradlew compileDebugKotlin:*)"
+      "Bash(./gradlew compileDebugKotlin:*)",
+      "Bash(./gradlew:*)",
+      "Bash(lsof:*)",
+      "Bash(taskkill:*)"
     ]
   }
 }

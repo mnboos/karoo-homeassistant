@@ -17,3 +17,12 @@ make-spotless:
 
 build: make-spotless
     ./gradlew build
+
+clean:
+    ./gradlew clean
+
+list-tasks:
+    ./gradlew tasks
+
+kill-java:
+    taskkill /F /FI "IMAGENAME eq java.exe"

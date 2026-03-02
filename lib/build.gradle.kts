@@ -1,6 +1,8 @@
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import org.gradle.api.tasks.testing.Test
 import java.net.URL
+import java.nio.file.Paths
 import java.time.LocalDateTime
 
 plugins {
@@ -56,6 +58,10 @@ android {
     }
 }
 
+tasks.withType<Test>().configureEach {
+    failOnNoDiscoveredTests = false
+}
+
 tasks.dokkaHtml.configure {
     moduleName = "karoo-ext"
     moduleVersion = libVersion
@@ -77,7 +83,7 @@ tasks.dokkaHtml.configure {
             // https://github.com/Kotlin/dokka/issues/2876
             sourceLink {
                 localDirectory.set(projectDir.resolve("lib/src/main/kotlin"))
-                remoteUrl.set(URL("https://github.com/hammerheadnav/karoo-ext/blob/${libVersion}/lib"))
+                remoteUrl.set(Paths.get("https://github.com/hammerheadnav/karoo-ext/blob/${libVersion}/lib").toUri().toURL())
                 remoteLineSuffix.set("#L")
             }
             skipEmptyPackages.set(true)
