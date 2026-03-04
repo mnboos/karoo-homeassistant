@@ -21,4 +21,22 @@
         graphical="true"
         icon="@drawable/ic_sample"
         typeId="ha-btn-3" />
+    <DataType
+        displayName="@string/ha_garage_visual"
+        description="@string/ha_garage_visual_desc"
+        graphical="true"
+        icon="@drawable/ic_sample"
+        typeId="ha-btn-1-visual" />
+    <DataType
+        displayName="@string/ha_lights_visual"
+        description="@string/ha_lights_visual_desc"
+        graphical="true"
+        icon="@drawable/ic_sample"
+        typeId="ha-btn-2-visual" />
+    <DataType
+        displayName="@string/ha_fan_visual"
+        description="@string/ha_fan_visual_desc"
+        graphical="true"
+        icon="@drawable/ic_sample"
+        typeId="ha-btn-3-visual" />
 </ExtensionInfo>

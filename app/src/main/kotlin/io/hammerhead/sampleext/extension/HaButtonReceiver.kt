@@ -20,7 +20,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import io.hammerhead.karooext.KarooSystemService
+import io.hammerhead.karooext.internal.ViewEmitter
 import timber.log.Timber
+
+fun interface HaClickable {
+    fun handleClick(isConfirmation: Boolean, emitter: ViewEmitter)
+}
 
 class HaButtonReceiver : BroadcastReceiver() {
     companion object {
@@ -28,11 +33,11 @@ class HaButtonReceiver : BroadcastReceiver() {
         var karooSystemServiceProvider: (() -> KarooSystemService)? = null
 
         // Store references to data types for handling state
-        val dataTypeInstances = mutableMapOf<String, Pair<HaButtonDataType, ViewEmitterProvider>>()
+        val dataTypeInstances = mutableMapOf<String, Pair<HaClickable, ViewEmitterProvider>>()
 
         fun registerDataType(
             buttonId: String,
-            dataType: HaButtonDataType,
+            dataType: HaClickable,
             emitterProvider: ViewEmitterProvider,
         ) {
             dataTypeInstances[buttonId] = Pair(dataType, emitterProvider)
@@ -62,5 +67,5 @@ class HaButtonReceiver : BroadcastReceiver() {
 }
 
 fun interface ViewEmitterProvider {
-    fun get(): io.hammerhead.karooext.internal.ViewEmitter?
+    fun get(): ViewEmitter?
 }

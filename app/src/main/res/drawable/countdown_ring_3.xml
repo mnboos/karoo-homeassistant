@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 3/5 arc (216°) — orange -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Track ring -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#33FFFFFF"
+        android:strokeWidth="14"
+        android:pathData="M 100,10 a 90,90 0 1,1 0,0.001" />
+
+    <!-- Progress arc: 3/5 (216°), endpoint (47.1, 172.8), large-arc=1 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF9800"
+        android:strokeWidth="14"
+        android:strokeLineCap="round"
+        android:pathData="M 100,10 A 90,90 0 1,1 47.1,172.8" />
+
+</vector>

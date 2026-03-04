@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Full circle (5/5 remaining) — yellow -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Track ring -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#33FFFFFF"
+        android:strokeWidth="14"
+        android:pathData="M 100,10 a 90,90 0 1,1 0,0.001" />
+
+    <!-- Progress arc: full circle (5/5) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFEB3B"
+        android:strokeWidth="14"
+        android:strokeLineCap="round"
+        android:pathData="M 100,10 a 90,90 0 1,1 0,0.001" />
+
+</vector>

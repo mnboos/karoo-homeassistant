@@ -7,4 +7,10 @@
     <string name="ha_lights_desc">Control outdoor lights</string>
     <string name="ha_fan">Fan</string>
     <string name="ha_fan_desc">Control fan</string>
+    <string name="ha_garage_visual">Garage (Visual)</string>
+    <string name="ha_garage_visual_desc">Control garage door — graphical countdown</string>
+    <string name="ha_lights_visual">Lights (Visual)</string>
+    <string name="ha_lights_visual_desc">Control outdoor lights — graphical countdown</string>
+    <string name="ha_fan_visual">Fan (Visual)</string>
+    <string name="ha_fan_visual_desc">Control fan — graphical countdown</string>
 </resources>

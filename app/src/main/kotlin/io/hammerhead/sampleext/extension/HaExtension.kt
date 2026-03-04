@@ -35,13 +35,22 @@ class HaExtension : KarooExtension("homeassistant", "1.0") {
     private var serviceJob: Job? = null
 
     override val types: List<DataTypeImpl> by lazy {
-        HaConfig.buttons.map { button ->
-            HaButtonDataType(
-                extension = "homeassistant",
-                typeId = button.actionId,
-                button = button,
-                karooSystem = karooSystem,
-                context = this,
+        HaConfig.buttons.flatMap { button ->
+            listOf(
+                HaButtonDataType(
+                    extension = "homeassistant",
+                    typeId = button.actionId,
+                    button = button,
+                    karooSystem = karooSystem,
+                    context = this,
+                ),
+                HaButtonVisualDataType(
+                    extension = "homeassistant",
+                    typeId = "${button.actionId}-visual",
+                    button = button,
+                    karooSystem = karooSystem,
+                    context = this,
+                ),
             )
         }
     }

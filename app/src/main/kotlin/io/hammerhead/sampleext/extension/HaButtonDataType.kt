@@ -22,15 +22,22 @@ import android.content.Intent
 import android.widget.RemoteViews
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.DataTypeImpl
+import io.hammerhead.karooext.internal.Emitter
 import io.hammerhead.karooext.internal.ViewEmitter
+import io.hammerhead.karooext.models.DataPoint
+import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.HttpResponseState
 import io.hammerhead.karooext.models.InRideAlert
 import io.hammerhead.karooext.models.OnHttpResponse
+import io.hammerhead.karooext.models.StreamState
 import io.hammerhead.karooext.models.ViewConfig
 import io.hammerhead.sampleext.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -43,9 +50,30 @@ class HaButtonDataType(
     val button: HaButton,
     val karooSystem: KarooSystemService,
     val context: Context,
-) : DataTypeImpl(extension, typeId) {
+) : DataTypeImpl(extension, typeId), HaClickable {
     private var isConfirmationPending = false
     private var confirmationTimeoutJob: Job? = null
+    private val _countdownSeconds = MutableStateFlow<Int?>(null)
+
+    override fun startStream(emitter: Emitter<StreamState>) {
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            _countdownSeconds.collect { seconds ->
+                if (seconds != null) {
+                    emitter.onNext(
+                        StreamState.Streaming(
+                            DataPoint(
+                                dataTypeId = dataTypeId,
+                                values = mapOf(DataType.Field.SINGLE to seconds.toDouble()),
+                            ),
+                        ),
+                    )
+                } else {
+                    emitter.onNext(StreamState.Idle)
+                }
+            }
+        }
+        emitter.setCancellable { job.cancel() }
+    }
 
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
         // Register this data type with the receiver so it can handle clicks
@@ -94,12 +122,13 @@ class HaButtonDataType(
         }
     }
 
-    fun handleClick(isConfirmation: Boolean, emitter: ViewEmitter) {
+    override fun handleClick(isConfirmation: Boolean, emitter: ViewEmitter) {
         if (isConfirmation) {
             // Second click - execute the action
             confirmationTimeoutJob?.cancel()
             isConfirmationPending = false
-            callHa()
+            _countdownSeconds.value = null
+            callHaButton(button, karooSystem, context)
             // Reset button to normal state
             val views = createButtonViews(context, false)
             emitter.updateView(views)
@@ -111,10 +140,12 @@ class HaButtonDataType(
                 // Reset to normal state after 5 seconds if not confirmed
                 confirmationTimeoutJob = GlobalScope.launch {
                     for (remainingSeconds in 5 downTo 1) {
+                        _countdownSeconds.value = remainingSeconds
                         val views = createCountdownButtonViews(context, remainingSeconds)
                         emitter.updateView(views)
                         delay(1000)
                     }
+                    _countdownSeconds.value = null
                     isConfirmationPending = false
                     val resetViews = createButtonViews(context, false)
                     emitter.updateView(resetViews)
@@ -156,55 +187,58 @@ class HaButtonDataType(
     }
 
     fun callHa() {
-        val url = "${HaConfig.BASE_URL}/api/services/${button.domain}/${button.service}"
-        val headers = mapOf(
-            "Authorization" to "Bearer ${HaConfig.ACCESS_TOKEN}",
-            "Content-Type" to "application/json",
-        )
-        val bodyJson = if (button.entityId != null) {
-            """{"entity_id":"${button.entityId}"}"""
-        } else {
-            "{}"
-        }
+        callHaButton(button, karooSystem, context)
+    }
+}
 
-        val listenerRef = object {
-            var id: String = ""
-        }
+fun callHaButton(button: HaButton, karooSystem: KarooSystemService, context: Context) {
+    val url = "${HaConfig.BASE_URL}/api/services/${button.domain}/${button.service}"
+    val headers = mapOf(
+        "Authorization" to "Bearer ${HaConfig.ACCESS_TOKEN}",
+        "Content-Type" to "application/json",
+    )
+    val bodyJson = if (button.entityId != null) {
+        """{"entity_id":"${button.entityId}"}"""
+    } else {
+        "{}"
+    }
 
-        listenerRef.id = karooSystem.addConsumer(
-            OnHttpResponse.MakeHttpRequest(
-                method = "POST",
-                url = url,
-                headers = headers,
-                body = bodyJson.toByteArray(),
-            ),
-        ) { response: OnHttpResponse ->
-            when (val state = response.state) {
-                is HttpResponseState.Complete -> {
-                    Timber.d("HA response for ${button.displayName}: ${state.statusCode}")
-                    if (state.statusCode in 200..299) {
-                        karooSystem.dispatch(
-                            InRideAlert(
-                                id = "ha-action-${button.actionId}",
-                                icon = R.drawable.ic_sample,
-                                title = button.displayName,
-                                detail = "Command sent to Home Assistant",
-                                autoDismissMs = 3_000,
-                                backgroundColor = R.color.colorPrimary,
-                                textColor = R.color.white,
-                            ),
-                        )
-                    } else {
-                        val errorMsg = state.error ?: "HTTP ${state.statusCode}"
-                        Timber.e("HA error for ${button.displayName}: $errorMsg")
-                    }
-                    // Remove the consumer to avoid repeated calls
-                    karooSystem.removeConsumer(listenerRef.id)
+    val listenerRef = object {
+        var id: String = ""
+    }
+
+    listenerRef.id = karooSystem.addConsumer(
+        OnHttpResponse.MakeHttpRequest(
+            method = "POST",
+            url = url,
+            headers = headers,
+            body = bodyJson.toByteArray(),
+        ),
+    ) { response: OnHttpResponse ->
+        when (val state = response.state) {
+            is HttpResponseState.Complete -> {
+                Timber.d("HA response for ${button.displayName}: ${state.statusCode}")
+                if (state.statusCode in 200..299) {
+                    karooSystem.dispatch(
+                        InRideAlert(
+                            id = "ha-action-${button.actionId}",
+                            icon = R.drawable.ic_sample,
+                            title = button.displayName,
+                            detail = "Command sent to Home Assistant",
+                            autoDismissMs = 3_000,
+                            backgroundColor = R.color.colorPrimary,
+                            textColor = R.color.white,
+                        ),
+                    )
+                } else {
+                    val errorMsg = state.error ?: "HTTP ${state.statusCode}"
+                    Timber.e("HA error for ${button.displayName}: $errorMsg")
                 }
+                karooSystem.removeConsumer(listenerRef.id)
+            }
 
-                else -> {
-                    Timber.d("HA request for ${button.displayName} in progress...")
-                }
+            else -> {
+                Timber.d("HA request for ${button.displayName} in progress...")
             }
         }
     }
