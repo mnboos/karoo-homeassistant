@@ -1,3 +1,11 @@
+import java.util.Properties
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.dagger.hilt.android)
@@ -17,6 +25,11 @@ android {
         targetSdk = 34
         versionCode = 10
         versionName = "2.5"
+
+        buildConfigField("String", "HA_BASE_URL",
+            "\"${localProperties.getProperty("ha.baseUrl", "")}\"")
+        buildConfigField("String", "HA_ACCESS_TOKEN",
+            "\"${localProperties.getProperty("ha.accessToken", "")}\"")
     }
 
     buildTypes {
@@ -33,13 +46,10 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
-
     buildFeatures {
         viewBinding = true
         compose = true
+        buildConfig = true
     }
 }
 
@@ -64,6 +74,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.core)
     debugImplementation(libs.androidx.ui.tooling)
 
     implementation(libs.androidx.activity.compose)

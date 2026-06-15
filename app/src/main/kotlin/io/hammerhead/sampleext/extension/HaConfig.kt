@@ -16,13 +16,64 @@
 
 package io.hammerhead.sampleext.extension
 
-object HaConfig {
-    const val BASE_URL = "http://homeassistant.local:8123" // TODO: change
-    const val ACCESS_TOKEN = "YOUR_LONG_LIVED_ACCESS_TOKEN" // TODO: change
+import android.content.Context
+import io.hammerhead.sampleext.BuildConfig
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import timber.log.Timber
 
-    val buttons = listOf(
-        HaButton("ha-btn-1", "Garage", "cover", "toggle", "cover.garage"),
-        HaButton("ha-btn-2", "Lights", "light", "toggle", "light.outdoor"),
-        HaButton("ha-btn-3", "Fan", "switch", "toggle", "switch.fan"),
-    )
+@Serializable
+data class ButtonConfig(
+    val actionId: String,
+    val displayName: String,
+    val domain: String,
+    val service: String,
+    val entityId: String? = null,
+)
+
+fun ButtonConfig.toHaButton() = HaButton(actionId, displayName, domain, service, entityId)
+
+@Serializable
+data class AppConfig(
+    val baseUrl: String = BuildConfig.HA_BASE_URL,
+    val accessToken: String = BuildConfig.HA_ACCESS_TOKEN,
+    val buttons: List<ButtonConfig> = defaultButtons,
+) {
+    companion object {
+        val defaultButtons = listOf(
+            ButtonConfig("ha-btn-1", "Garage", "button", "press", "button.garage_impuls"),
+            ButtonConfig("ha-btn-2", "Lights", "light", "toggle", "light.outdoor"),
+            ButtonConfig("ha-btn-3", "Fan", "switch", "toggle", "switch.fan"),
+        )
+
+        private const val PREFS_NAME = "ha_config"
+        private const val KEY_CONFIG = "config"
+
+        private val json = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
+
+        fun load(context: Context): AppConfig {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val raw = prefs.getString(KEY_CONFIG, null) ?: return AppConfig()
+            return try {
+                json.decodeFromString(raw)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to parse AppConfig, using defaults")
+                AppConfig()
+            }
+        }
+
+        fun save(context: Context, config: AppConfig) {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            prefs.edit().putString(KEY_CONFIG, json.encodeToString(config)).apply()
+        }
+
+        fun reset(context: Context) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit().clear().apply()
+        }
+    }
 }

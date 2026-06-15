@@ -17,6 +17,7 @@
 package io.hammerhead.sampleext.extension
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -74,6 +75,10 @@ fun CountdownVisualView(
 
     val clickIntent = Intent(ACTION_HA_BUTTON_CLICKED).apply {
         setClass(context, HaButtonReceiver::class.java)
+        // Unique data per button + state: PendingIntent matching ignores extras, so without a
+        // distinct Uri here all buttons' intents are filterEquals-equal and collapse onto one
+        // PendingIntent — pressing one button would fire whichever was composed last.
+        data = Uri.parse("ha-button://$receiverKey/${if (isConfirmation) "confirm" else "press"}")
         putExtra(EXTRA_BUTTON_ID, receiverKey)
         putExtra("confirmation", isConfirmation)
     }

@@ -1,16 +1,30 @@
 <resources>
     <string name="app_name">Karoo Home Assistant</string>
     <string name="extension_name">Home Assistant</string>
-    <string name="ha_garage">Garage</string>
-    <string name="ha_garage_desc">Control garage door</string>
-    <string name="ha_lights">Lights</string>
-    <string name="ha_lights_desc">Control outdoor lights</string>
-    <string name="ha_fan">Fan</string>
-    <string name="ha_fan_desc">Control fan</string>
-    <string name="ha_garage_visual">Garage (Visual)</string>
-    <string name="ha_garage_visual_desc">Control garage door — graphical countdown</string>
-    <string name="ha_lights_visual">Lights (Visual)</string>
-    <string name="ha_lights_visual_desc">Control outdoor lights — graphical countdown</string>
-    <string name="ha_fan_visual">Fan (Visual)</string>
-    <string name="ha_fan_visual_desc">Control fan — graphical countdown</string>
+    <string name="ha_btn_1">Garage</string>
+    <string name="ha_btn_1_desc">Garage door impulse</string>
+    <string name="ha_btn_2">Lights</string>
+    <string name="ha_btn_2_desc">Outdoor lights toggle</string>
+    <string name="ha_btn_3">Fan</string>
+    <string name="ha_btn_3_desc">Fan switch toggle</string>
+    <string name="ha_btn_1_visual">Garage ⬡</string>
+    <string name="ha_btn_1_visual_desc">Garage — graphical countdown</string>
+    <string name="ha_btn_2_visual">Lights ⬡</string>
+    <string name="ha_btn_2_visual_desc">Lights — graphical countdown</string>
+    <string name="ha_btn_3_visual">Fan ⬡</string>
+    <string name="ha_btn_3_visual_desc">Fan — graphical countdown</string>
+    <!-- Settings screen -->
+    <string name="settings_title">Home Assistant Settings</string>
+    <string name="settings_connection">Connection</string>
+    <string name="settings_base_url">HA Base URL</string>
+    <string name="settings_base_url_hint">http://homeassistant.local:8123</string>
+    <string name="settings_token">Access Token</string>
+    <string name="settings_token_hint">Long-lived access token</string>
+    <string name="settings_buttons">Buttons</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_saved">Settings saved</string>
+    <string name="settings_display_name">Display Name</string>
+    <string name="settings_domain">Domain (e.g. cover, light, switch)</string>
+    <string name="settings_service">Service (e.g. toggle, turn_on)</string>
+    <string name="settings_entity_id">Entity ID (optional)</string>
 </resources>

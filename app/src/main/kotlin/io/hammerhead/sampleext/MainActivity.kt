@@ -18,17 +18,22 @@ package io.hammerhead.sampleext
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.material3.MaterialTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
- * Minimal launcher activity for extension discovery.
- * The Karoo system requires a launchable activity to recognize this as an extension app.
+ * Settings activity — lets the user configure the Home Assistant URL, access token,
+ * and the three button slots.
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Extension is managed by Karoo service. User doesn't interact with this activity.
-        finish()
+        setContent {
+            MaterialTheme {
+                ConfigScreen()
+            }
+        }
     }
 }

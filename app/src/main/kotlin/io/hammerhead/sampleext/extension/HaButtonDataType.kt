@@ -19,6 +19,7 @@ package io.hammerhead.sampleext.extension
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.widget.RemoteViews
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.DataTypeImpl
@@ -106,9 +107,12 @@ class HaButtonDataType(
             setTextColor(R.id.button_text, if (isConfirmation) 0xFF000000.toInt() else 0xFFFFFFFF.toInt())
             setInt(R.id.button_text, "setBackgroundColor", color)
 
-            // Set up click intent for the button
+            // Set up click intent for the button. Unique data per button + state keeps the
+            // intents filterEquals-distinct so their PendingIntents can't collapse onto one
+            // (PendingIntent matching ignores extras).
             val intent = Intent(ACTION_HA_BUTTON_CLICKED).apply {
                 setClass(context, HaButtonReceiver::class.java)
+                data = Uri.parse("ha-button://${button.actionId}/${if (isConfirmation) "confirm" else "press"}")
                 putExtra(EXTRA_BUTTON_ID, button.actionId)
                 putExtra("confirmation", isConfirmation)
             }
@@ -170,9 +174,11 @@ class HaButtonDataType(
             setTextColor(R.id.button_text, 0xFF000000.toInt()) // Black text
             setInt(R.id.button_text, "setBackgroundColor", color)
 
-            // Set up click intent for confirmation
+            // Set up click intent for confirmation. Unique data keeps it filterEquals-distinct
+            // from other buttons' intents (PendingIntent matching ignores extras).
             val intent = Intent(ACTION_HA_BUTTON_CLICKED).apply {
                 setClass(context, HaButtonReceiver::class.java)
+                data = Uri.parse("ha-button://${button.actionId}/confirm")
                 putExtra(EXTRA_BUTTON_ID, button.actionId)
                 putExtra("confirmation", true)
             }
@@ -192,9 +198,10 @@ class HaButtonDataType(
 }
 
 fun callHaButton(button: HaButton, karooSystem: KarooSystemService, context: Context) {
-    val url = "${HaConfig.BASE_URL}/api/services/${button.domain}/${button.service}"
+    val config = AppConfig.load(context)
+    val url = "${config.baseUrl}/api/services/${button.domain}/${button.service}"
     val headers = mapOf(
-        "Authorization" to "Bearer ${HaConfig.ACCESS_TOKEN}",
+        "Authorization" to "Bearer ${config.accessToken}",
         "Content-Type" to "application/json",
     )
     val bodyJson = if (button.entityId != null) {
@@ -202,6 +209,19 @@ fun callHaButton(button: HaButton, karooSystem: KarooSystemService, context: Con
     } else {
         "{}"
     }
+
+    // Show immediate feedback so the user knows the tap was registered
+    karooSystem.dispatch(
+        InRideAlert(
+            id = "ha-action-${button.actionId}",
+            icon = R.drawable.ic_sample,
+            title = button.displayName,
+            detail = "Sending…",
+            autoDismissMs = 10_000,
+            backgroundColor = R.color.orange,
+            textColor = R.color.white,
+        ),
+    )
 
     val listenerRef = object {
         var id: String = ""
@@ -213,27 +233,43 @@ fun callHaButton(button: HaButton, karooSystem: KarooSystemService, context: Con
             url = url,
             headers = headers,
             body = bodyJson.toByteArray(),
+            // Fail fast instead of silently queuing: a button press should give immediate
+            // feedback, never fire minutes later when a connection happens to return.
+            waitForConnection = false,
         ),
     ) { response: OnHttpResponse ->
         when (val state = response.state) {
             is HttpResponseState.Complete -> {
                 Timber.d("HA response for ${button.displayName}: ${state.statusCode}")
-                if (state.statusCode in 200..299) {
-                    karooSystem.dispatch(
-                        InRideAlert(
-                            id = "ha-action-${button.actionId}",
-                            icon = R.drawable.ic_sample,
-                            title = button.displayName,
-                            detail = "Command sent to Home Assistant",
-                            autoDismissMs = 3_000,
-                            backgroundColor = R.color.colorPrimary,
-                            textColor = R.color.white,
-                        ),
-                    )
+                val (detail, bgColor) = if (state.statusCode in 200..299) {
+                    "Command sent" to R.color.green
                 } else {
-                    val errorMsg = state.error ?: "HTTP ${state.statusCode}"
+                    // Surface HA's response body (e.g. {"message":"401: Unauthorized"}) so the
+                    // real reason is visible on the Karoo, not just the bare status code.
+                    val bodyText = state.body
+                        ?.toString(Charsets.UTF_8)
+                        ?.trim()
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.take(140)
+                    val errorMsg = when {
+                        state.error != null -> state.error
+                        bodyText != null -> "HTTP ${state.statusCode}: $bodyText"
+                        else -> "HTTP ${state.statusCode}"
+                    }
                     Timber.e("HA error for ${button.displayName}: $errorMsg")
+                    "Error: $errorMsg" to R.color.red
                 }
+                karooSystem.dispatch(
+                    InRideAlert(
+                        id = "ha-action-${button.actionId}",
+                        icon = R.drawable.ic_sample,
+                        title = button.displayName,
+                        detail = detail,
+                        autoDismissMs = 3_000,
+                        backgroundColor = bgColor,
+                        textColor = R.color.white,
+                    ),
+                )
                 karooSystem.removeConsumer(listenerRef.id)
             }
 

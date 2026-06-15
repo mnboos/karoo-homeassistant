@@ -32,6 +32,7 @@ androidx-glance-preview = { group = "androidx.glance", name = "glance-preview", 
 # compose
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2024.10.00" }
 androidx-material3 = { module = "androidx.compose.material3:material3" }
+androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
 androidx-ui = { module = "androidx.compose.ui:ui" }
 androidx-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }

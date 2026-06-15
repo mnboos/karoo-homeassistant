@@ -4,38 +4,38 @@
     icon="@drawable/ic_sample"
     id="homeassistant">
     <DataType
-        displayName="@string/ha_garage"
-        description="@string/ha_garage_desc"
+        displayName="@string/ha_btn_1"
+        description="@string/ha_btn_1_desc"
         graphical="true"
         icon="@drawable/ic_sample"
         typeId="ha-btn-1" />
     <DataType
-        displayName="@string/ha_lights"
-        description="@string/ha_lights_desc"
+        displayName="@string/ha_btn_2"
+        description="@string/ha_btn_2_desc"
         graphical="true"
         icon="@drawable/ic_sample"
         typeId="ha-btn-2" />
     <DataType
-        displayName="@string/ha_fan"
-        description="@string/ha_fan_desc"
+        displayName="@string/ha_btn_3"
+        description="@string/ha_btn_3_desc"
         graphical="true"
         icon="@drawable/ic_sample"
         typeId="ha-btn-3" />
     <DataType
-        displayName="@string/ha_garage_visual"
-        description="@string/ha_garage_visual_desc"
+        displayName="@string/ha_btn_1_visual"
+        description="@string/ha_btn_1_visual_desc"
         graphical="true"
         icon="@drawable/ic_sample"
         typeId="ha-btn-1-visual" />
     <DataType
-        displayName="@string/ha_lights_visual"
-        description="@string/ha_lights_visual_desc"
+        displayName="@string/ha_btn_2_visual"
+        description="@string/ha_btn_2_visual_desc"
         graphical="true"
         icon="@drawable/ic_sample"
         typeId="ha-btn-2-visual" />
     <DataType
-        displayName="@string/ha_fan_visual"
-        description="@string/ha_fan_visual_desc"
+        displayName="@string/ha_btn_3_visual"
+        description="@string/ha_btn_3_visual_desc"
         graphical="true"
         icon="@drawable/ic_sample"
         typeId="ha-btn-3-visual" />

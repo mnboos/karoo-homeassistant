@@ -26,3 +26,16 @@ list-tasks:
 
 kill-java:
     taskkill /F /FI "IMAGENAME eq java.exe"
+
+[env("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic")]
+[env("ANTHROPIC_DEFAULT_HAIKU_MODEL", "deepseek-v4-flash")]
+[env("ANTHROPIC_DEFAULT_OPUS_MODEL", "deepseek-v4-pro[1m]")]
+[env("ANTHROPIC_DEFAULT_SONNET_MODEL", "deepseek-v4-pro[1m]")]
+[env("ANTHROPIC_MODEL", "deepseek-v4-pro[1m]")]
+[env("CLAUDE_CODE_EFFORT_LEVEL", "max")]
+[env("CLAUDE_CODE_SUBAGENT_MODEL", "deepseek-v4-flash")]
+[env("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC", "1")]
+claude-deepseek:
+    claude --model opus --effort max
+
+alias claude := claude-deepseek
