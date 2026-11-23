@@ -1,7 +1,7 @@
 {
   "label": "Karoo Home Assistant",
   "packageName": "io.github.mnboos.karoohomeassistant",
-  "latestApkUrl": "https://github.com/mnboos/karoo-homeassistant/releases/latest/download/karoo-homeassistant-26.11.0.apk",
+  "latestApkUrl": "https://github.com/mnboos/karoo-homeassistant/releases/download/26.11.0/karoo-homeassistant.apk",
   "latestVersion": "26.11.0",
   "latestVersionCode": 1,
   "developer": "mnboos",
