@@ -20,5 +20,5 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class io.hammerhead.sampleext.extension.** { *; }
+-keep class io.github.mnboos.karoohomeassistant.extension.** { *; }
 -keep class io.hammerhead.karooext.** { *; }

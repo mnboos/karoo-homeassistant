@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025 SRAM LLC.
+ * Copyright (c) 2024 SRAM LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-package io.hammerhead.sampleext.extension
+package io.github.mnboos.karoohomeassistant
 
-data class HaButton(
-    val actionId: String, // matches BonusAction actionId in XML
-    val displayName: String, // label shown on Karoo button picker
-    val domain: String, // e.g. "light", "cover", "switch", "script"
-    val service: String, // e.g. "toggle", "turn_on", "turn_off"
-    val entityId: String?, // null for script/scene calls that don't need it
-)
+import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
+import timber.log.Timber
+
+@HiltAndroidApp
+class SampleApplication : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+        Timber.plant(Timber.DebugTree())
+        Timber.d("Starting sample")
+    }
+}

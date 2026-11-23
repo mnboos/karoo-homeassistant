@@ -14,25 +14,37 @@
  * limitations under the License.
  */
 
-package io.hammerhead.sampleext.extension
+package io.github.mnboos.karoohomeassistant.extension
 
 import android.content.Context
-import io.hammerhead.sampleext.BuildConfig
+import io.github.mnboos.karoohomeassistant.BuildConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 
+/**
+ * One button slot. [actionId] matches a `typeId` in `extension_info.xml`; a slot without
+ * [domain] / [service] is not set up yet and must not call Home Assistant.
+ */
 @Serializable
 data class ButtonConfig(
     val actionId: String,
     val displayName: String,
-    val domain: String,
-    val service: String,
+    val domain: String = "",
+    val service: String = "",
     val entityId: String? = null,
-)
+) {
+    val isConfigured: Boolean get() = domain.isNotBlank() && service.isNotBlank()
 
-fun ButtonConfig.toHaButton() = HaButton(actionId, displayName, domain, service, entityId)
+    /** Short description of what the slot does, e.g. `light.toggle · light.outdoor`. */
+    val summary: String
+        get() = if (!isConfigured) "Not set" else "$domain.$service" + (entityId?.let { " · $it" } ?: "")
+}
+
+/** The saved config of slot [actionId], or an unconfigured placeholder if there is none. */
+fun AppConfig.slot(actionId: String): ButtonConfig =
+    buttons.firstOrNull { it.actionId == actionId } ?: AppConfig.unconfiguredSlot(actionId)
 
 /** Full URL of a Home Assistant REST endpoint, e.g. `apiUrl("services/light/toggle")`. */
 fun AppConfig.apiUrl(path: String) = "${baseUrl.trim().trimEnd('/')}/api/$path"
@@ -61,11 +73,13 @@ data class AppConfig(
     val buttons: List<ButtonConfig> = defaultButtons,
 ) {
     companion object {
-        val defaultButtons = listOf(
-            ButtonConfig("ha-btn-1", "Garage", "button", "press", "button.garage_impuls"),
-            ButtonConfig("ha-btn-2", "Lights", "light", "toggle", "light.outdoor"),
-            ButtonConfig("ha-btn-3", "Fan", "switch", "toggle", "switch.fan"),
-        )
+        /** Slot ids; must match the `typeId`s declared in `res/xml/extension_info.xml`. */
+        val SLOT_IDS = listOf("ha-btn-1", "ha-btn-2", "ha-btn-3")
+
+        fun unconfiguredSlot(actionId: String) =
+            ButtonConfig(actionId, "Button ${SLOT_IDS.indexOf(actionId) + 1}")
+
+        val defaultButtons = SLOT_IDS.map { unconfiguredSlot(it) }
 
         private const val PREFS_NAME = "ha_config"
         private const val KEY_CONFIG = "config"

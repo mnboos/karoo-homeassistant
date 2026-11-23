@@ -1,4 +1,4 @@
-package io.hammerhead.sampleext.extension
+package io.github.mnboos.karoohomeassistant.extension
 
 import android.content.Context
 import dagger.Module

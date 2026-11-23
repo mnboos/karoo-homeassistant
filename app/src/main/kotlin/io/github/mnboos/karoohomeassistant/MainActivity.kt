@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.hammerhead.sampleext
+package io.github.mnboos.karoohomeassistant
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

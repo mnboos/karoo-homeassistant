@@ -6,18 +6,24 @@ set shell := ["bash", "-c"]
 JAVA_HOME := "C:\\Program Files\\Java\\latest\\jdk-21"
 container := env("CONTAINER_ENGINE", if os_family() == "windows" { "podman" } else { `command -v docker >/dev/null && echo docker || echo podman` })
 
+[default]
+[private]
+@list:
+    just --list
+
 devs:
     adb devices
 
 install:
     adb -s 00446GA250970042 install -r app/build/outputs/apk/debug/app-debug.apk
 
+# Spotless 6 stores configuration in the daemon JVM (Spotless issue #987).
 make-spotless:
-    ./gradlew :spotlessApply
+    ./gradlew --no-configuration-cache :spotlessApply
 
 
 build: make-spotless
-    ./gradlew build
+    ./gradlew --no-configuration-cache build
 
 # Build the debug APK in a container (no local JDK/Android SDK needed) -> app/build/outputs/apk/debug/app-debug.apk
 build-docker:

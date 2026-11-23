@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.hammerhead.sampleext
+package io.github.mnboos.karoohomeassistant
 
 import android.content.Context
 import android.os.Handler
@@ -61,11 +61,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import io.github.mnboos.karoohomeassistant.extension.AppConfig
+import io.github.mnboos.karoohomeassistant.extension.ButtonConfig
+import io.github.mnboos.karoohomeassistant.extension.ConnectionTestResult
+import io.github.mnboos.karoohomeassistant.extension.EntityListResult
+import io.github.mnboos.karoohomeassistant.extension.fetchHaEntities
+import io.github.mnboos.karoohomeassistant.extension.testHaConnection
 import io.hammerhead.karooext.KarooSystemService
-import io.hammerhead.sampleext.extension.AppConfig
-import io.hammerhead.sampleext.extension.ButtonConfig
-import io.hammerhead.sampleext.extension.ConnectionTestResult
-import io.hammerhead.sampleext.extension.testHaConnection
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 @Composable
 fun ConfigScreen() {
@@ -285,14 +290,15 @@ fun ConfigScreen() {
 
     if (showPhoneSetup) {
         PhoneSetupDialog(
-            prefillBaseUrl = baseUrl,
-            prefillHeaderKey = customHeaderKey,
+            current = currentConfig(),
+            karooSystem = karooSystem,
             onDismiss = { showPhoneSetup = false },
             onReceived = { values ->
                 values.baseUrl?.let { baseUrl = it }
                 values.accessToken?.let { accessToken = it }
                 values.headerKey?.let { customHeaderKey = it }
                 values.headerValue?.let { customHeaderValue = it }
+                values.buttons?.let { buttons = it.toMutableList() }
                 showPhoneSetup = false
                 showToast(context, "Received from phone — review and tap Save")
             },
@@ -317,10 +323,30 @@ fun ConfigScreen() {
     }
 }
 
+/** Blocking entity list request for the phone setup server; runs on its request thread. */
+private fun loadEntitiesBlocking(karooSystem: KarooSystemService, config: AppConfig): EntityListResult {
+    val result = AtomicReference<EntityListResult>()
+    val done = CountDownLatch(1)
+    val consumerId = fetchHaEntities(karooSystem, config) {
+        result.set(it)
+        done.countDown()
+    }
+    if (done.await(20, TimeUnit.SECONDS)) return result.get()
+    consumerId?.let { karooSystem.removeConsumer(it) }
+    return EntityListResult(
+        emptyList(),
+        if (karooSystem.connected) {
+            "No response after 20 s"
+        } else {
+            "Karoo system not reachable — loading entities only works on a Karoo"
+        },
+    )
+}
+
 @Composable
 private fun PhoneSetupDialog(
-    prefillBaseUrl: String,
-    prefillHeaderKey: String,
+    current: AppConfig,
+    karooSystem: KarooSystemService,
     onDismiss: () -> Unit,
     onReceived: (PhoneSetupServer.SetupValues) -> Unit,
     onLockedOut: () -> Unit,
@@ -334,8 +360,8 @@ private fun PhoneSetupDialog(
         DisposableEffect(Unit) {
             val mainHandler = Handler(Looper.getMainLooper())
             val server = PhoneSetupServer(
-                prefillBaseUrl = prefillBaseUrl,
-                prefillHeaderKey = prefillHeaderKey,
+                current = current,
+                loadEntities = { config -> loadEntitiesBlocking(karooSystem, config) },
                 onReceived = { values -> mainHandler.post { onReceived(values) } },
                 onLockedOut = { mainHandler.post { onLockedOut() } },
             )
@@ -372,7 +398,8 @@ private fun PhoneSetupDialog(
                             fontFamily = FontFamily.Monospace,
                         )
                         Text(
-                            text = "Empty fields on the phone keep their current value.",
+                            text = "Empty fields on the phone keep their current value. " +
+                                "Entities for the buttons can be picked there too.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -412,7 +439,7 @@ private fun ButtonRow(slotNumber: Int, button: ButtonConfig, onEditClick: () -> 
         Column(modifier = Modifier.weight(1f)) {
             Text(text = "Slot $slotNumber: ${button.displayName}", style = MaterialTheme.typography.bodyLarge)
             Text(
-                text = "${button.domain}.${button.service}" + (button.entityId?.let { " · $it" } ?: ""),
+                text = button.summary,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

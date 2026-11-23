@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.hammerhead.sampleext.extension
+package io.github.mnboos.karoohomeassistant.extension
 
 import android.content.BroadcastReceiver
 import android.content.Context

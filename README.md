@@ -17,6 +17,14 @@ The app's settings screen configures:
   shown `http://<karoo-ip>:<port>` address on a phone in the same network, enter the PIN and the values, then tap
   **Save** on the Karoo. The page is plain HTTP on the local network; the server only runs while the dialog is open,
   requires the one-time PIN, stops after 5 wrong PINs and never sends the stored secrets back to the browser.
+- **Buttons** – three fixed slots, shown in the Karoo page editor as *HA Button 1–3* (plus a *⬡* countdown variant
+  each). On the phone page, enter the PIN, tap **Load entities from Home Assistant** and pick an entity per slot:
+  the action (e.g. `toggle`, `press`) and the label are filled in from the entity and can be changed. Then tap
+  **Send to Karoo** and **Save** on the Karoo. Presses use the new settings right away (no restart); the label on a
+  ride page updates when Karoo redraws the page. Listing entities uses
+  `POST /api/template` (the Karoo HTTP route is limited to 100 KB responses, too small for `/api/states`), which
+  Home Assistant only allows for **admin** users. With a non-admin token, set the slots by hand on the Karoo
+  (domain, service, entity ID). Unset slots show an alert when pressed and send nothing.
 
 Client certificates (mTLS) are not supported: requests are executed by the Karoo system (`MakeHttpRequest`, possibly
 via the phone companion app), which opens the TLS connection itself, so the extension cannot provide a certificate.
@@ -194,7 +202,7 @@ Main activity demonstrates:
 2. Beeper control
 3. Subscribing to system events
 
-The functionality demonstrated in [MainActivity](app/src/main/kotlin/io/hammerhead/sampleext/MainActivity.kt) can also
+The functionality demonstrated in [MainActivity](app/src/main/kotlin/io/github/mnboos/karoohomeassistant/MainActivity.kt) can also
 be used in extensions to create more advanced in-ride behavior.
 
 To install the basic sample app:
@@ -207,7 +215,7 @@ The `app` depends on the `lib` module directly, allowing for quick testing of li
 
 ### Sample Extension
 
-The sample app includes an [Extension](app/src/main/kotlin/io/hammerhead/sampleext/extension)
+The sample app includes an [Extension](app/src/main/kotlin/io/github/mnboos/karoohomeassistant/extension)
 This is a good starting point or reference if you have an existing Android app written in Kotlin.
 
 The sample extension demonstrates:

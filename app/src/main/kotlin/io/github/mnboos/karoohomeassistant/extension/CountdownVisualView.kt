@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.hammerhead.sampleext.extension
+package io.github.mnboos.karoohomeassistant.extension
 
 import android.content.Intent
 import android.net.Uri
@@ -41,7 +41,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import io.hammerhead.sampleext.R
+import io.github.mnboos.karoohomeassistant.R
 
 private val countdownRingDrawables = mapOf(
     5 to R.drawable.countdown_ring_5,

@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package io.hammerhead.sampleext.extension
+package io.github.mnboos.karoohomeassistant.extension
 
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
+import io.github.mnboos.karoohomeassistant.R
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.Emitter
@@ -32,7 +33,6 @@ import io.hammerhead.karooext.models.InRideAlert
 import io.hammerhead.karooext.models.OnHttpResponse
 import io.hammerhead.karooext.models.StreamState
 import io.hammerhead.karooext.models.ViewConfig
-import io.hammerhead.sampleext.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -40,18 +40,23 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import timber.log.Timber
 
-const val ACTION_HA_BUTTON_CLICKED = "io.hammerhead.sampleext.HA_BUTTON_CLICKED"
+const val ACTION_HA_BUTTON_CLICKED = "io.github.mnboos.karoohomeassistant.HA_BUTTON_CLICKED"
 const val EXTRA_BUTTON_ID = "button_id"
 
 class HaButtonDataType(
     extension: String,
     typeId: String,
-    val button: HaButton,
+    /** Button slot ([ButtonConfig.actionId]); its config is re-read on every use so saved changes apply at once. */
+    val slotId: String,
     val karooSystem: KarooSystemService,
     val context: Context,
 ) : DataTypeImpl(extension, typeId), HaClickable {
+    private fun currentButton() = AppConfig.load(context).slot(slotId)
+
     private var isConfirmationPending = false
     private var confirmationTimeoutJob: Job? = null
     private val _countdownSeconds = MutableStateFlow<Int?>(null)
@@ -79,7 +84,7 @@ class HaButtonDataType(
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
         // Register this data type with the receiver so it can handle clicks
         HaButtonReceiver.registerDataType(
-            button.actionId,
+            slotId,
             this,
             ViewEmitterProvider { emitter },
         )
@@ -94,7 +99,7 @@ class HaButtonDataType(
         val buttonText = if (isConfirmation) {
             "TAP AGAIN (5s)"
         } else {
-            button.displayName
+            currentButton().displayName
         }
 
         val color = if (isConfirmation) {
@@ -113,13 +118,13 @@ class HaButtonDataType(
             // (PendingIntent matching ignores extras).
             val intent = Intent(ACTION_HA_BUTTON_CLICKED).apply {
                 setClass(context, HaButtonReceiver::class.java)
-                data = Uri.parse("ha-button://${button.actionId}/${if (isConfirmation) "confirm" else "press"}")
-                putExtra(EXTRA_BUTTON_ID, button.actionId)
+                data = Uri.parse("ha-button://$slotId/${if (isConfirmation) "confirm" else "press"}")
+                putExtra(EXTRA_BUTTON_ID, slotId)
                 putExtra("confirmation", isConfirmation)
             }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
-                button.actionId.hashCode() + if (isConfirmation) 1000 else 0,
+                slotId.hashCode() + if (isConfirmation) 1000 else 0,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
@@ -133,7 +138,7 @@ class HaButtonDataType(
             confirmationTimeoutJob?.cancel()
             isConfirmationPending = false
             _countdownSeconds.value = null
-            callHaButton(button, karooSystem, context)
+            callHaButton(currentButton(), karooSystem, context)
             // Reset button to normal state
             val views = createButtonViews(context, false)
             emitter.updateView(views)
@@ -179,13 +184,13 @@ class HaButtonDataType(
             // from other buttons' intents (PendingIntent matching ignores extras).
             val intent = Intent(ACTION_HA_BUTTON_CLICKED).apply {
                 setClass(context, HaButtonReceiver::class.java)
-                data = Uri.parse("ha-button://${button.actionId}/confirm")
-                putExtra(EXTRA_BUTTON_ID, button.actionId)
+                data = Uri.parse("ha-button://$slotId/confirm")
+                putExtra(EXTRA_BUTTON_ID, slotId)
                 putExtra("confirmation", true)
             }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
-                button.actionId.hashCode() + 1000,
+                slotId.hashCode() + 1000,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
@@ -194,19 +199,31 @@ class HaButtonDataType(
     }
 
     fun callHa() {
-        callHaButton(button, karooSystem, context)
+        callHaButton(currentButton(), karooSystem, context)
     }
 }
 
-fun callHaButton(button: HaButton, karooSystem: KarooSystemService, context: Context) {
+fun callHaButton(button: ButtonConfig, karooSystem: KarooSystemService, context: Context) {
+    if (!button.isConfigured) {
+        karooSystem.dispatch(
+            InRideAlert(
+                id = "ha-action-${button.actionId}",
+                icon = R.drawable.ic_sample,
+                title = button.displayName,
+                detail = "Not set up — choose an entity in the Home Assistant app",
+                autoDismissMs = 5_000,
+                backgroundColor = R.color.red,
+                textColor = R.color.white,
+            ),
+        )
+        return
+    }
     val config = AppConfig.load(context)
     val url = config.apiUrl("services/${button.domain}/${button.service}")
     val headers = config.requestHeaders()
-    val bodyJson = if (button.entityId != null) {
-        """{"entity_id":"${button.entityId}"}"""
-    } else {
-        "{}"
-    }
+    val bodyJson = buildJsonObject {
+        button.entityId?.let { put("entity_id", it) }
+    }.toString()
 
     // Show immediate feedback so the user knows the tap was registered
     karooSystem.dispatch(

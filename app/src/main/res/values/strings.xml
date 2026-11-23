@@ -1,18 +1,19 @@
 <resources>
     <string name="app_name">Karoo Home Assistant</string>
     <string name="extension_name">Home Assistant</string>
-    <string name="ha_btn_1">Garage</string>
-    <string name="ha_btn_1_desc">Garage door impulse</string>
-    <string name="ha_btn_2">Lights</string>
-    <string name="ha_btn_2_desc">Outdoor lights toggle</string>
-    <string name="ha_btn_3">Fan</string>
-    <string name="ha_btn_3_desc">Fan switch toggle</string>
-    <string name="ha_btn_1_visual">Garage ⬡</string>
-    <string name="ha_btn_1_visual_desc">Garage — graphical countdown</string>
-    <string name="ha_btn_2_visual">Lights ⬡</string>
-    <string name="ha_btn_2_visual_desc">Lights — graphical countdown</string>
-    <string name="ha_btn_3_visual">Fan ⬡</string>
-    <string name="ha_btn_3_visual_desc">Fan — graphical countdown</string>
+    <!-- Data field names in the Karoo page editor; what each slot does is set up in the app -->
+    <string name="ha_btn_1">HA Button 1</string>
+    <string name="ha_btn_1_desc">Home Assistant button slot 1 (set up in the app)</string>
+    <string name="ha_btn_2">HA Button 2</string>
+    <string name="ha_btn_2_desc">Home Assistant button slot 2 (set up in the app)</string>
+    <string name="ha_btn_3">HA Button 3</string>
+    <string name="ha_btn_3_desc">Home Assistant button slot 3 (set up in the app)</string>
+    <string name="ha_btn_1_visual">HA Button 1 ⬡</string>
+    <string name="ha_btn_1_visual_desc">Home Assistant button slot 1 — graphical countdown</string>
+    <string name="ha_btn_2_visual">HA Button 2 ⬡</string>
+    <string name="ha_btn_2_visual_desc">Home Assistant button slot 2 — graphical countdown</string>
+    <string name="ha_btn_3_visual">HA Button 3 ⬡</string>
+    <string name="ha_btn_3_visual_desc">Home Assistant button slot 3 — graphical countdown</string>
     <!-- Settings screen -->
     <string name="settings_title">Home Assistant Settings</string>
     <string name="settings_connection">Connection</string>

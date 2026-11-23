@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.hammerhead.sampleext.extension
+package io.github.mnboos.karoohomeassistant.extension
 
 import dagger.hilt.android.AndroidEntryPoint
 import io.hammerhead.karooext.KarooSystemService
@@ -34,22 +34,22 @@ class HaExtension : KarooExtension("homeassistant", "1.0") {
 
     private var serviceJob: Job? = null
 
+    // Fixed slots (declared in extension_info.xml); each data type reads its slot's current config
+    // when used, so settings changes apply without restarting the extension.
     override val types: List<DataTypeImpl> by lazy {
-        val config = AppConfig.load(this)
-        config.buttons.flatMap { btnConfig ->
-            val button = btnConfig.toHaButton()
+        AppConfig.SLOT_IDS.flatMap { slotId ->
             listOf(
                 HaButtonDataType(
                     extension = "homeassistant",
-                    typeId = button.actionId,
-                    button = button,
+                    typeId = slotId,
+                    slotId = slotId,
                     karooSystem = karooSystem,
                     context = this,
                 ),
                 HaButtonVisualDataType(
                     extension = "homeassistant",
-                    typeId = "${button.actionId}-visual",
-                    button = button,
+                    typeId = "$slotId-visual",
+                    slotId = slotId,
                     karooSystem = karooSystem,
                     context = this,
                 ),

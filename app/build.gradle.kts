@@ -16,11 +16,11 @@ plugins {
 }
 
 android {
-    namespace = "io.hammerhead.sampleext"
+    namespace = "io.github.mnboos.karoohomeassistant"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "io.hammerhead.sampleext"
+        applicationId = "io.github.mnboos.karoohomeassistant"
         minSdk = 23
         targetSdk = 34
         versionCode = 10

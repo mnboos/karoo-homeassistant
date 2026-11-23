@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.hammerhead.sampleext.extension
+package io.github.mnboos.karoohomeassistant.extension
 
 import android.content.Context
 import androidx.compose.ui.unit.DpSize
@@ -46,10 +46,12 @@ import timber.log.Timber
 class HaButtonVisualDataType(
     extension: String,
     typeId: String,
-    val button: HaButton,
+    /** Button slot ([ButtonConfig.actionId]); its config is re-read on every use so saved changes apply at once. */
+    val slotId: String,
     val karooSystem: KarooSystemService,
     val context: Context,
 ) : DataTypeImpl(extension, typeId), HaClickable {
+    private fun currentButton() = AppConfig.load(context).slot(slotId)
 
     private val glance = GlanceRemoteViews()
     private var isConfirmationPending = false
@@ -57,7 +59,7 @@ class HaButtonVisualDataType(
     private var interactive = true
 
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
-        Timber.d("Starting visual view for ${button.displayName} ($typeId), boundariesEnabled=${config.boundariesEnabled}")
+        Timber.d("Starting visual view for $slotId ($typeId), boundariesEnabled=${config.boundariesEnabled}")
         // No click handler in preview (page editing) mode, so Karoo gets the long-press to edit.
         interactive = !config.preview
         HaButtonReceiver.registerDataType(typeId, this, ViewEmitterProvider { emitter })
@@ -68,7 +70,7 @@ class HaButtonVisualDataType(
         }
 
         emitter.setCancellable {
-            Timber.d("Stopping visual view for ${button.displayName}")
+            Timber.d("Stopping visual view for $slotId")
             initJob.cancel()
             confirmationTimeoutJob?.cancel()
         }
@@ -78,7 +80,7 @@ class HaButtonVisualDataType(
         if (isConfirmation) {
             confirmationTimeoutJob?.cancel()
             isConfirmationPending = false
-            callHaButton(button, karooSystem, context)
+            callHaButton(currentButton(), karooSystem, context)
             CoroutineScope(Dispatchers.IO).launch {
                 emitter.updateView(buildView(context, null))
             }
@@ -100,7 +102,7 @@ class HaButtonVisualDataType(
     private suspend fun buildView(context: Context, remainingSeconds: Int?) =
         glance.compose(context, DpSize.Unspecified) {
             CountdownVisualView(
-                buttonName = button.displayName,
+                buttonName = currentButton().displayName,
                 receiverKey = typeId,
                 remainingSeconds = remainingSeconds,
                 interactive = interactive,
